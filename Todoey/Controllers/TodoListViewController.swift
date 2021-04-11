@@ -7,35 +7,19 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
     var itemArray = [Item]() //List of objects of Items
-    
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
   
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-       
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
-        print(dataFilePath)
-        
-        
-        
-        
-        // Do any additional setup after loading the view.
-        let newItem = Item()
-        newItem.title = "French Bulldog"
-        itemArray.append(newItem)
-        
-        let newItem1 = Item()
-        newItem1.title = "Pug"
-        itemArray.append(newItem1)
-        
-        let newItem2 = Item()
-        newItem2.title = "English Bulldog"
-        itemArray.append(newItem2)
+      //  loadItems()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -54,15 +38,7 @@ class TodoListViewController: UITableViewController {
         //Ternary operatör ==>
         //value = condition ? valueTrue : ValueFalse
         cell.accessoryType = item.done ? .checkmark : .none
-        
-        /*  if item.done == true{
-         cell.accessoryType = .checkmark
-         }else{
-         cell.accessoryType = .none
-         }
-         */
-        
-        
+    
         return cell
     }
     
@@ -92,10 +68,12 @@ class TodoListViewController: UITableViewController {
             print("Sucess!")
             //when user has write on the textField and pressed Add
             
-            // print(textField.text) //this will return Optional.. so we need to wrap!
-            let newItem = Item()
-            newItem.title = textField.text!
+          
             
+            // print(textField.text) //this will return Optional.. so we need to wrap!
+            let newItem = Item(context: self.context)
+            newItem.title = textField.text!
+            newItem.done = false
             self.itemArray.append(newItem)
             
             self.tableView.reloadData() // to refresh the tabel otherwise you won't see your new lable
@@ -114,17 +92,29 @@ class TodoListViewController: UITableViewController {
     }
     
     func saveItems(){
-        let encoder = PropertyListEncoder()
+       
         
         do{
-            let data = try encoder.encode(itemArray)
-            try data.write(to: self.dataFilePath!)
+           
+            try context.save()
         }catch{
-            print("Error encoding item array, \(error)")
+            print("Error saving context, \(error)")
         }
+        self.tableView.reloadData()
     }//end saveItems
-    
-    
+ 
+    /*
+    func loadItems(){
+        if let data = try? Data(contentsOf: dataFilePath!){
+            let decoder = PropertyListDecoder()
+            do{
+                itemArray = try decoder.decode([Item].self, from: data)
+            }catch{
+                print("Error decoding item array, \(error)")
+            }
+        }
+    }//end loadItems
+ */
     
 }
 
