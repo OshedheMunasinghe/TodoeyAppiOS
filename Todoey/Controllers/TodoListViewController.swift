@@ -20,6 +20,8 @@ class TodoListViewController: UITableViewController {
         //to find the file where the db files or plist is....
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
+       // searchBar.delegate = self
+        
        loadItems()
     }
     
@@ -112,17 +114,34 @@ class TodoListViewController: UITableViewController {
         self.tableView.reloadData()
     }//end saveItems
  
-    
-    func loadItems(){
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
+    //Item.fetch... is a default value that's how loadItems works in viewLoad()
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()){
+    //    let request : NSFetchRequest<Item> = Item.fetchRequest()
         
         do{
            itemArray = try context.fetch(request)
         }catch{
             print("Error fetching data from context \(error)")
         }
+        tableView.reloadData()
     }//end loadItems
- 
+}//end TodoLostViewController
+
+//MARK: - SearchBar
+extension TodoListViewController: UISearchBarDelegate{
     
-}
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request : NSFetchRequest<Item> = Item.fetchRequest() //read data
+        
+        //we need to get which query to fetch the row
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        //sort the data that we get back from the database in any order of our choice
+        request.sortDescriptors  = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        loadItems(with: request)
+        
+    }//end searchBarSearchButtonClicked
+    
+}//end extension:UISearchBarDelegate
 
