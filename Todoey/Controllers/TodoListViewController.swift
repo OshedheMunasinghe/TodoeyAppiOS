@@ -9,29 +9,33 @@
 import UIKit
 
 class TodoListViewController: UITableViewController {
-    var itemArray = [Items]() //List of objects of Items
+    var itemArray = [Item]() //List of objects of Items
     
-    let defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+  
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+       
+        
+        print(dataFilePath)
+        
+        
+        
+        
         // Do any additional setup after loading the view.
-        let newItem = Items()
+        let newItem = Item()
         newItem.title = "French Bulldog"
         itemArray.append(newItem)
         
-        let newItem1 = Items()
+        let newItem1 = Item()
         newItem1.title = "Pug"
         itemArray.append(newItem1)
         
-        let newItem2 = Items()
+        let newItem2 = Item()
         newItem2.title = "English Bulldog"
         itemArray.append(newItem2)
-        
-        
-         if let items = defaults.array(forKey: "TodoListArray") as? [Items]{
-             itemArray = items
-        }
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -69,7 +73,9 @@ class TodoListViewController: UITableViewController {
         
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-        tableView.reloadData()
+        saveItems()
+        
+        
         tableView.deselectRow(at: indexPath, animated: true)
         
     }
@@ -87,16 +93,14 @@ class TodoListViewController: UITableViewController {
             //when user has write on the textField and pressed Add
             
             // print(textField.text) //this will return Optional.. so we need to wrap!
-            let newItem = Items()
+            let newItem = Item()
             newItem.title = textField.text!
             
             self.itemArray.append(newItem)
             
-            //store data when app is terminate
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
-            
-            
             self.tableView.reloadData() // to refresh the tabel otherwise you won't see your new lable
+            
+            self.saveItems()
         }
         
         //When user write in the text in pop up message
@@ -108,6 +112,18 @@ class TodoListViewController: UITableViewController {
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
+    
+    func saveItems(){
+        let encoder = PropertyListEncoder()
+        
+        do{
+            let data = try encoder.encode(itemArray)
+            try data.write(to: self.dataFilePath!)
+        }catch{
+            print("Error encoding item array, \(error)")
+        }
+    }//end saveItems
+    
     
     
 }
