@@ -17,9 +17,10 @@ class TodoListViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //to find the file where the db files or plist is....
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
-      //  loadItems()
+       loadItems()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -47,10 +48,18 @@ class TodoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //  print(itemArray[indexPath.row])
         
+      
+        // DELETE
+        //If you don't delete first from CoreData it will come up bug! out of range
+        //check video 255
+     //   context.delete(itemArray[indexPath.row]) //this delete in DataCore! otherwise old data will be saved!
+        
+    //    itemArray.remove(at: indexPath.row) //this doesnt do with DataCore, it just "view" phone
+      
+        //this makes checkmarks... which it has a bug..
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
         saveItems()
-        
         
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -103,18 +112,17 @@ class TodoListViewController: UITableViewController {
         self.tableView.reloadData()
     }//end saveItems
  
-    /*
+    
     func loadItems(){
-        if let data = try? Data(contentsOf: dataFilePath!){
-            let decoder = PropertyListDecoder()
-            do{
-                itemArray = try decoder.decode([Item].self, from: data)
-            }catch{
-                print("Error decoding item array, \(error)")
-            }
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        do{
+           itemArray = try context.fetch(request)
+        }catch{
+            print("Error fetching data from context \(error)")
         }
     }//end loadItems
- */
+ 
     
 }
 
